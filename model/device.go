@@ -86,7 +86,7 @@ type Name string
 
 // NewName I assumed that some sort of validation is required for Name, at least number of characters
 func NewName(s string) (Name, error) {
-	if s = strings.TrimSpace(s); len(s) < 2 && len(s) <= 255 {
+	if s = strings.TrimSpace(s); len(s) < 2 || len(s) >= 255 {
 		return "", Err("name: 2-255 characters are required")
 	}
 
@@ -114,7 +114,7 @@ type Brand string
 
 // NewBrand I assumed that some sort of validation is required for Brand, at least number of characters
 func NewBrand(s string) (Brand, error) {
-	if s = strings.TrimSpace(s); len(s) < 3 && len(s) <= 255 {
+	if s = strings.TrimSpace(s); len(s) < 3 || len(s) >= 255 {
 		return "", Err("brand: 3-255 characters are required")
 	}
 

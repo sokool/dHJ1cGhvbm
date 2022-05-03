@@ -2,8 +2,10 @@ package model
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -12,6 +14,31 @@ type Device struct {
 	Name      Name
 	Brand     Brand
 	CreatedAt Date
+
+	json struct{ Name, Brand string }
+}
+
+func (m *Device) UnmarshalJSON(b []byte) error {
+	var err error
+	if bytes.Equal(b, null) {
+		return nil
+	}
+
+	if err = json.Unmarshal(b, &m.json); err != nil {
+		return err
+	}
+
+	if m.Brand, err = NewBrand(m.json.Brand); err != nil {
+		return err
+	}
+
+	if m.Name, err = NewName(m.json.Name); err != nil {
+		return err
+	}
+
+	m.CreatedAt = NewDate()
+
+	return nil
 }
 
 type ID int
@@ -25,6 +52,17 @@ func NewID(n int) (ID, error) {
 	return ID(n), nil
 }
 
+func NewParseID(s string) (ID, error) {
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, err
+	}
+
+	return NewID(n)
+}
+
+func (m ID) IsZero() bool { return m <= 0 }
+
 func (m *ID) UnmarshalJSON(b []byte) error {
 	if bytes.Equal(b, null) {
 		return nil
@@ -32,7 +70,7 @@ func (m *ID) UnmarshalJSON(b []byte) error {
 
 	n, err := strconv.Atoi(string(b))
 	if err != nil {
-		return nil
+		return err
 	}
 
 	j, err := NewID(n)
@@ -48,19 +86,22 @@ type Name string
 
 // NewName I assumed that some sort of validation is required for Name, at least number of characters
 func NewName(s string) (Name, error) {
-	if len(s) <= 2 && len(s) <= 255 {
-		return "", Err("brand: 2-255 characters are required")
+	if s = strings.TrimSpace(s); len(s) < 2 && len(s) <= 255 {
+		return "", Err("name: 2-255 characters are required")
 	}
 
 	return Name(s), nil
 }
 
+func (m Name) IsZero() bool { return m == "" }
+
 func (m *Name) UnmarshalJSON(b []byte) error {
-	if bytes.Equal(b, null) {
+	s := len(b)
+	if bytes.Equal(b, null) || s <= 2 {
 		return nil
 	}
 
-	j, err := NewName(string(b))
+	j, err := NewName(string(b[1 : s-1]))
 	if err != nil {
 		return err
 	}
@@ -73,19 +114,22 @@ type Brand string
 
 // NewBrand I assumed that some sort of validation is required for Brand, at least number of characters
 func NewBrand(s string) (Brand, error) {
-	if len(s) <= 3 && len(s) <= 255 {
+	if s = strings.TrimSpace(s); len(s) < 3 && len(s) <= 255 {
 		return "", Err("brand: 3-255 characters are required")
 	}
 
 	return Brand(s), nil
 }
 
+func (m Brand) IsZero() bool { return m == "" }
+
 func (m *Brand) UnmarshalJSON(b []byte) error {
-	if bytes.Equal(b, null) {
+	s := len(b)
+	if bytes.Equal(b, null) || s <= 2 {
 		return nil
 	}
 
-	j, err := NewBrand(string(b))
+	j, err := NewBrand(string(b[1 : s-1]))
 	if err != nil {
 		return err
 	}

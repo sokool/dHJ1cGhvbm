@@ -6,8 +6,9 @@ type Query struct {
 }
 
 type Devices interface {
-	Add(Device) error
-	Update(Device)
+	Add(*Device) error
+	Update(*Device) error
+	Delete(ID) error
 	Search(Query) ([]Device, error)
 }
 
@@ -18,17 +19,57 @@ func NewDevices() Devices {
 	return make(devices)
 }
 
-func (d devices) Add(device Device) error {
-	//TODO implement me
-	panic("implement me")
+func (r devices) Delete(id ID) error {
+	delete(r, id)
+	return nil
 }
 
-func (d devices) Update(device Device) {
-	//TODO implement me
-	panic("implement me")
+func (r devices) Add(d *Device) (err error) {
+	d.ID, err = NewID(sequence + 1)
+	if err != nil {
+		return err
+	}
+
+	r[d.ID] = d
+	sequence++
+
+	return nil
 }
 
-func (d devices) Search(query Query) ([]Device, error) {
-	//TODO implement me
-	panic("implement me")
+func (r devices) Update(d *Device) error {
+	m, found := r[d.ID]
+	if !found {
+		return Err("device: not found")
+	}
+
+	if d.Brand != m.Brand {
+		m.Brand = d.Brand
+	}
+
+	if d.Name != m.Name {
+		m.Name = d.Name
+	}
+
+	d = m
+
+	return nil
 }
+
+func (r devices) Search(q Query) ([]Device, error) {
+	var o []Device
+	for _, d := range r {
+		if !q.ID.IsZero() && q.ID != d.ID {
+			continue
+		}
+
+		if !q.Brand.IsZero() && q.Brand != d.Brand {
+			continue
+		}
+
+		o = append(o, *d)
+	}
+
+	return o, nil
+}
+
+var sequence int

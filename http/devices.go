@@ -2,20 +2,20 @@ package http
 
 import (
 	"net/http"
-	"truphone/model"
+	. "truphone/model"
 )
 
 type devices struct {
 	handler
-	repository model.Devices
+	repository Devices
 }
 
-func newDevices(r model.Devices) *devices {
+func newDevices(r Devices) *devices {
 	return &devices{repository: r}
 }
 
 func (d *devices) add(w http.ResponseWriter, r *http.Request) {
-	var m model.Device
+	var m Device
 	if !d.read(w, r, &m) {
 		return
 	}
@@ -34,7 +34,7 @@ func (d *devices) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	d.one(w, model.Query{ID: i})
+	d.one(w, Query{ID: i})
 }
 
 func (d *devices) search(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +47,7 @@ func (d *devices) search(w http.ResponseWriter, r *http.Request) {
 }
 
 func (d *devices) update(w http.ResponseWriter, r *http.Request) {
-	var m model.Device
+	var m Device
 	var ok bool
 
 	if m.ID, ok = d.id(w, r); !ok {
@@ -77,20 +77,20 @@ func (d *devices) delete(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (d *devices) id(w http.ResponseWriter, r *http.Request) (model.ID, bool) {
-	n, err := model.NewParseID(d.param(r, "device"))
+func (d *devices) id(w http.ResponseWriter, r *http.Request) (ID, bool) {
+	n, err := NewParseID(d.param(r, "device"))
 	if err != nil {
 		d.write(w, err)
 	}
 	return n, err == nil
 }
 
-func (d *devices) query(w http.ResponseWriter, r *http.Request) (model.Query, bool) {
-	var m model.Query
+func (d *devices) query(w http.ResponseWriter, r *http.Request) (Query, bool) {
+	var m Query
 	return m, d.url(w, r, &m)
 }
 
-func (d *devices) all(w http.ResponseWriter, q model.Query) {
+func (d *devices) all(w http.ResponseWriter, q Query) {
 	m, err := d.repository.Search(q)
 	if err != nil {
 		d.write(w, err)
@@ -100,7 +100,7 @@ func (d *devices) all(w http.ResponseWriter, q model.Query) {
 	d.write(w, m)
 }
 
-func (d *devices) one(w http.ResponseWriter, q model.Query) {
+func (d *devices) one(w http.ResponseWriter, q Query) {
 	m, err := d.repository.Search(q)
 	if err != nil {
 		d.write(w, err)

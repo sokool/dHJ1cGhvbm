@@ -3,10 +3,10 @@ package http
 import (
 	"github.com/gorilla/mux"
 	"net/http"
-	"truphone/model"
+	. "truphone/model"
 )
 
-func New(address string, r model.Devices) error {
+func New(address string, r Devices) error {
 	d := newDevices(r)
 	m := mux.NewRouter()
 	m.HandleFunc("/devices", d.add).Methods(http.MethodPost)

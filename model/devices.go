@@ -5,6 +5,8 @@ type Query struct {
 	Brand Brand
 }
 
+// Devices represents storage for all Device, decision for type of data engine can be made at later stage.
+// Current implementation is based on memory
 type Devices interface {
 	Add(*Device) error
 	Update(*Device) error
